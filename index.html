@@ -178,7 +178,7 @@
           <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
         </button>
       </div>
-      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
         <div class="visually-hidden">Toggle table of contents sidebar</div>
         <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
       </label>
@@ -231,7 +231,7 @@
               <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
             </button>
           </div>
-          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
             <div class="visually-hidden">Toggle table of contents sidebar</div>
             <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
           </label>
@@ -241,6 +241,364 @@
 <h1>nmdc-client Documentation<a class="headerlink" href="#nmdc-client-documentation" title="Link to this heading">¶</a></h1>
 <div class="toctree-wrapper compound">
 </div>
+<p id="module-nmdc_client">This module provides functions to interact with the NMDC API,
+including retrieving metadata into dataframes and linking across schema objects.</p>
+<p>The <a class="reference internal" href="#nmdc_client.NmdcClient.find" title="nmdc_client.NmdcClient.find"><code class="xref py py-class docutils literal notranslate"><span class="pre">NmdcClient.find</span></code></a> and <a class="reference internal" href="#nmdc_client.NmdcClient.lookup" title="nmdc_client.NmdcClient.lookup"><code class="xref py py-class docutils literal notranslate"><span class="pre">NmdcClient.lookup</span></code></a> functions return data as a DataFrame.
+To retrieve data as a list of dictionaries, use <a class="reference internal" href="#nmdc_client.NmdcClient.find_dict" title="nmdc_client.NmdcClient.find_dict"><code class="xref py py-class docutils literal notranslate"><span class="pre">NmdcClient.find_dict</span></code></a> and
+<a class="reference internal" href="#nmdc_client.NmdcClient.lookup_dict" title="nmdc_client.NmdcClient.lookup_dict"><code class="xref py py-class docutils literal notranslate"><span class="pre">NmdcClient.lookup_dict</span></code></a>.
+To retrieve data as a list of <code class="docutils literal notranslate"><span class="pre">nmdc_schema.nmdc</span></code> objects, use <a class="reference internal" href="#nmdc_client.NmdcClient.find_full" title="nmdc_client.NmdcClient.find_full"><code class="xref py py-class docutils literal notranslate"><span class="pre">NmdcClient.find_full</span></code></a>
+and <a class="reference internal" href="#nmdc_client.NmdcClient.lookup_full" title="nmdc_client.NmdcClient.lookup_full"><code class="xref py py-class docutils literal notranslate"><span class="pre">NmdcClient.lookup_full</span></code></a>.
+See the <a class="reference external" href="https://microbiomedata.github.io/nmdc-schema/">NMDC schema documentation</a>
+for more information on NMDC schema classes.</p>
+<p>When working with DataFrames, there is a <a class="reference internal" href="#nmdc_client.NmdcClient.merge_related" title="nmdc_client.NmdcClient.merge_related"><code class="xref py py-class docutils literal notranslate"><span class="pre">NmdcClient.merge_related</span></code></a> function
+to merge related objects into one DataFrame.
+This uses the more low-level <a class="reference internal" href="#nmdc_client.NmdcClient.related_ids" title="nmdc_client.NmdcClient.related_ids"><code class="xref py py-class docutils literal notranslate"><span class="pre">NmdcClient.related_ids</span></code></a> function to
+find related objects of a given type from a single ID.</p>
+<p class="rubric">Examples</p>
+<p>These examples assume the following
+import to access Pythonic representations of the NMDC schema.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">nmdc_schema</span> <span class="kn">import</span> <span class="n">nmdc</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">nmdc_schema.nmdc</span></code> contains the NMDC schema classes.
+Names of classes and slots can be discovered by autocompleting <code class="docutils literal notranslate"><span class="pre">nmdc.</span></code> in your IDE, or by
+visiting the <a class="reference external" href="https://microbiomedata.github.io/nmdc-schema/">NMDC schema documentation</a>.</p>
+<p>To interact with the NMDC API, create an <a class="reference internal" href="#nmdc_client.NmdcClient" title="nmdc_client.NmdcClient"><code class="xref py py-class docutils literal notranslate"><span class="pre">NmdcClient</span></code></a> instance.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">client</span> <span class="o">=</span> <span class="n">NmdcClient</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>The following retrieves all studies with Wrighton as principal investigator as a DataFrame.
+Queries are specified using
+<a class="reference external" href="https://www.mongodb.com/docs/manual/tutorial/query-documents/">MongoDB query syntax</a>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">query</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;principal_investigator.has_raw_value&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;$regex&#39;</span><span class="p">:</span> <span class="s1">&#39;Wrighton&#39;</span><span class="p">}}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">studies</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">nmdc</span><span class="o">.</span><span class="n">Study</span><span class="p">,</span> <span class="n">query</span><span class="o">=</span><span class="n">query</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">studies</span><span class="p">)</span>
+<span class="go">2</span>
+</pre></div>
+</div>
+<p>The following retrieves a specific biosample by its identifier and associates it
+with study metadata. The first time <a class="reference internal" href="#nmdc_client.NmdcClient.merge_related" title="nmdc_client.NmdcClient.merge_related"><code class="xref py py-class docutils literal notranslate"><span class="pre">NmdcClient.merge_related</span></code></a> is called,
+it will fetch all linkages between objects in the NMDC schema and cache them in
+a file local to the package. You can force an update of this cache at a later time with
+by calling <a class="reference internal" href="#nmdc_client.NmdcClient.fetch_links" title="nmdc_client.NmdcClient.fetch_links"><code class="xref py py-class docutils literal notranslate"><span class="pre">NmdcClient.fetch_links</span></code></a> with <code class="docutils literal notranslate"><span class="pre">force</span></code> set to <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ids</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;nmdc:bsm-13-7qxjvr77&#39;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">biosample</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">lookup</span><span class="p">(</span><span class="n">nmdc</span><span class="o">.</span><span class="n">Biosample</span><span class="p">,</span> <span class="n">ids</span><span class="p">,</span> <span class="n">fields</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">add_study</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">merge_related</span><span class="p">(</span><span class="n">biosample</span><span class="p">,</span> <span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="n">nmdc</span><span class="o">.</span><span class="n">Study</span><span class="p">,</span> <span class="n">fields</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="s1">&#39;title&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">add_study</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+<span class="gp">... </span>   <span class="nb">print</span><span class="p">(</span><span class="n">col</span><span class="p">)</span>
+<span class="go">id</span>
+<span class="go">name</span>
+<span class="go">id_Study</span>
+<span class="go">title</span>
+</pre></div>
+</div>
+<p>The following retrieves 10 samples then merges them with all associated WorkflowExecutions.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">samp</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">nmdc</span><span class="o">.</span><span class="n">Biosample</span><span class="p">,</span> <span class="n">fields</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">],</span> <span class="n">limit</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">exec</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">merge_related</span><span class="p">(</span><span class="n">samp</span><span class="p">,</span> <span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="n">nmdc</span><span class="o">.</span><span class="n">WorkflowExecution</span><span class="p">,</span> <span class="n">fields</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">exec</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="n">col</span><span class="p">)</span>
+<span class="go">id</span>
+<span class="go">type</span>
+<span class="go">id_WorkflowExecution</span>
+<span class="go">type_WorkflowExecution</span>
+</pre></div>
+</div>
+<dl class="py class">
+<dt class="sig sig-object py" id="nmdc_client.NmdcClient">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nmdc_client.</span></span><span class="sig-name descname"><span class="pre">NmdcClient</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">base_url</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'https://api.microbiomedata.org'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_page_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sleep_seconds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">30</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">links</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/nmdc_client.html#NmdcClient"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#nmdc_client.NmdcClient" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class to manage calls to the NMDC API service.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>base_url</strong> – The base URL of the NMDC API.</p></li>
+<li><p><strong>max_page_size</strong> – The maximum number of objects to retrieve per request.</p></li>
+<li><p><strong>sleep_seconds</strong> – The number of seconds to wait between API requests when paginating.</p></li>
+<li><p><strong>timeout</strong> – The number of seconds to wait for an API request to complete before
+throwing an exception.</p></li>
+<li><p><strong>verbose</strong> – Whether to print URLs of API requests.</p></li>
+<li><p><strong>links</strong> – A dictionary of links between objects in the NMDC schema.
+Defaults to None which fetches and caches the links on the first call
+to <a class="reference internal" href="#nmdc_client.NmdcClient.related_ids" title="nmdc_client.NmdcClient.related_ids"><code class="xref py py-func docutils literal notranslate"><span class="pre">related_ids()</span></code></a> or <a class="reference internal" href="#nmdc_client.NmdcClient.merge_related" title="nmdc_client.NmdcClient.merge_related"><code class="xref py py-func docutils literal notranslate"><span class="pre">merge_related()</span></code></a>.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">client</span> <span class="o">=</span> <span class="n">NmdcClient</span><span class="p">(</span><span class="n">max_page_size</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="nmdc_client.NmdcClient.database_collections_for_type">
+<span class="sig-name descname"><span class="pre">database_collections_for_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">SchemaClass</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/nmdc_client.html#NmdcClient.database_collections_for_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#nmdc_client.NmdcClient.database_collections_for_type" title="Link to this definition">¶</a></dt>
+<dd><p>Find the database collection names for a given schema class, if any.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>cls</strong> – The schema class to find the collection name for.
+Must be a subclass of <code class="docutils literal notranslate"><span class="pre">nmdc_schema.nmdc.NamedThing</span></code>.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The list of collection names containing items of that class or subclass,
+or an empty list if none are found.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nmdc_client.NmdcClient.fetch_codes">
+<span class="sig-name descname"><span class="pre">fetch_codes</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/nmdc_client.html#NmdcClient.fetch_codes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#nmdc_client.NmdcClient.fetch_codes" title="Link to this definition">¶</a></dt>
+<dd><p>Fetch and cache typecodes from the NMDC typecode API.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nmdc_client.NmdcClient.fetch_links">
+<span class="sig-name descname"><span class="pre">fetch_links</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">force</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/nmdc_client.html#NmdcClient.fetch_links"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#nmdc_client.NmdcClient.fetch_links" title="Link to this definition">¶</a></dt>
+<dd><p>Construct and cache “major” links between objects in the NMDC schema.</p>
+<p>This function constructs links between objects in the NMDC schema
+and caches them in a pickle file.
+If the links have already been constructed and cached, they are
+loaded from the pickle file.</p>
+<p>The “major” links through the NMDC schema objects follow this
+directional flow. The <cite>(process)*</cite> notation
+represents a process that may be repeated zero or more times.</p>
+<blockquote>
+<div><p>Study (→ Study)* →
+Biosample (→ MaterialProcessing → ProcessedSample)* →
+DataGeneration → DataObject →
+(WorkflowExecution → DataObject)*</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>force</strong> – Whether to force the construction of links even
+if they have already been cached.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nmdc_client.NmdcClient.find">
+<span class="sig-name descname"><span class="pre">find</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">SchemaClass</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">query</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fields</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="reference internal" href="_modules/nmdc_client.html#NmdcClient.find"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#nmdc_client.NmdcClient.find" title="Link to this definition">¶</a></dt>
+<dd><p>Retrieve a DataFrame of objects of the specified class from the NMDC schema.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cls</strong> – The class type or collection of the objects to retrieve.
+Must be a subclass of <code class="docutils literal notranslate"><span class="pre">nmdc_schema.nmdc.NamedThing</span></code> or the name of a
+NMDC database collection.</p></li>
+<li><p><strong>query</strong> – A dictionary representing the query to filter the objects.
+Defaults to None which returns all objects.</p></li>
+<li><p><strong>fields</strong> – A list of fields to include in the result.
+Defaults to None which returns all fields.</p></li>
+<li><p><strong>limit</strong> – The maximum number of objects to retrieve.
+Defaults to None which retrieves all matching objects.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A DataFrame containing the retrieved objects.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nmdc_client.NmdcClient.find_dict">
+<span class="sig-name descname"><span class="pre">find_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">SchemaClass</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">query</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fields</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/nmdc_client.html#NmdcClient.find_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#nmdc_client.NmdcClient.find_dict" title="Link to this definition">¶</a></dt>
+<dd><p>Retrieve a list of dictionaries of objects of the specified class from the NMDC schema.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cls</strong> – The class type or collection of the objects to retrieve.
+Must be a subclass of <code class="docutils literal notranslate"><span class="pre">nmdc_schema.nmdc.NamedThing</span></code> or the name of a
+NMDC database collection.</p></li>
+<li><p><strong>query</strong> – A dictionary representing the query to filter the results.
+Defaults to None which returns all objects.</p></li>
+<li><p><strong>fields</strong> – A list of fields to include in the result.
+Defaults to None which returns all fields.</p></li>
+<li><p><strong>limit</strong> – The maximum number of objects to retrieve.
+Defaults to None which retrieves all matching objects.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A list of dictionaries representing the retrieved objects.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nmdc_client.NmdcClient.find_full">
+<span class="sig-name descname"><span class="pre">find_full</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">SchemaClass</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">query</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">SchemaClass</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/nmdc_client.html#NmdcClient.find_full"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#nmdc_client.NmdcClient.find_full" title="Link to this definition">¶</a></dt>
+<dd><p>Retrieve a list of full objects of the specified class from the NMDC schema.</p>
+<p>This function queries the NMDC API to retrieve objects of the specified class,
+converts the resulting dictionaries to instances of the specified schema class, and
+returns them as a list.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cls</strong> – The class type of the objects to retrieve.
+Must be a subclass of <code class="docutils literal notranslate"><span class="pre">nmdc_schema.nmdc.NamedThing</span></code>.</p></li>
+<li><p><strong>query</strong> – A dictionary representing the query to filter the results.
+Defaults to None which returns all objects.</p></li>
+<li><p><strong>limit</strong> – The maximum number of objects to retrieve.
+Defaults to None which retrieves all matching objects.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A list of instances of the specified class type.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nmdc_client.NmdcClient.follow_links">
+<span class="sig-name descname"><span class="pre">follow_links</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">root_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">direction</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#nmdc_client.SearchDirection" title="nmdc_client.SearchDirection"><span class="pre">SearchDirection</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">steps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/nmdc_client.html#NmdcClient.follow_links"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#nmdc_client.NmdcClient.follow_links" title="Link to this definition">¶</a></dt>
+<dd><p>Find all object identifiers linked to the specified object identifier.</p>
+<p>This function finds all object identifiers linked to the specified object identifier
+by traversing the links in the specified direction.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>root_id</strong> – The object identifier to start from.</p></li>
+<li><p><strong>direction</strong> – The direction to traverse the links.
+Use <a class="reference internal" href="#nmdc_client.SearchDirection.BACK" title="nmdc_client.SearchDirection.BACK"><code class="xref py py-class docutils literal notranslate"><span class="pre">SearchDirection.BACK</span></code></a> for incoming links and
+<a class="reference internal" href="#nmdc_client.SearchDirection.FORWARD" title="nmdc_client.SearchDirection.FORWARD"><code class="xref py py-class docutils literal notranslate"><span class="pre">SearchDirection.FORWARD</span></code></a> for outgoing links.</p></li>
+<li><p><strong>steps</strong> – The maximum number of steps to follow.
+Defaults to None which follows all links.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A list of object identifiers linked to the specified object identifier.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nmdc_client.NmdcClient.lookup">
+<span class="sig-name descname"><span class="pre">lookup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">SchemaClass</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ids</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fields</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="reference internal" href="_modules/nmdc_client.html#NmdcClient.lookup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#nmdc_client.NmdcClient.lookup" title="Link to this definition">¶</a></dt>
+<dd><p>Retrieve a DataFrame of objects by their identifiers.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cls</strong> – The class type or collection of the objects to retrieve.
+Must be a subclass of <code class="docutils literal notranslate"><span class="pre">nmdc_schema.nmdc.NamedThing</span></code> or the name of
+an NMDC database collection.</p></li>
+<li><p><strong>ids</strong> – A list of object identifiers.</p></li>
+<li><p><strong>fields</strong> – A list of fields to include in the result.
+Defaults to None which includes all fields.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A DataFrame representing the retrieved objects.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nmdc_client.NmdcClient.lookup_dict">
+<span class="sig-name descname"><span class="pre">lookup_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">SchemaClass</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ids</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fields</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/nmdc_client.html#NmdcClient.lookup_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#nmdc_client.NmdcClient.lookup_dict" title="Link to this definition">¶</a></dt>
+<dd><p>Retrieve a list of dictionaries of objects by their identifiers.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cls</strong> – The class type or collection of the objects to retrieve.
+Must be a subclass of <code class="docutils literal notranslate"><span class="pre">nmdc_schema.nmdc.NamedThing</span></code> or the name of a
+NMDC database collection.</p></li>
+<li><p><strong>ids</strong> – A list of object identifiers.</p></li>
+<li><p><strong>fields</strong> – A list of fields to include in the result.
+Defaults to None which includes all fields.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A list of dictionaries representing the retrieved objects.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nmdc_client.NmdcClient.lookup_full">
+<span class="sig-name descname"><span class="pre">lookup_full</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">SchemaClass</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ids</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="reference internal" href="_modules/nmdc_client.html#NmdcClient.lookup_full"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#nmdc_client.NmdcClient.lookup_full" title="Link to this definition">¶</a></dt>
+<dd><p>Retrieve a list of schema objects by their identifiers.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cls</strong> – The class type or collection of the objects to retrieve.
+Must be a subclass of <code class="docutils literal notranslate"><span class="pre">nmdc_schema.nmdc.NamedThing</span></code> or the name of
+an NMDC database collection.</p></li>
+<li><p><strong>ids</strong> – A list of object identifiers.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A list of instances of the specified class type.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nmdc_client.NmdcClient.merge_related">
+<span class="sig-name descname"><span class="pre">merge_related</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id_column</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cls</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">SchemaClass</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fields</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="reference internal" href="_modules/nmdc_client.html#NmdcClient.merge_related"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#nmdc_client.NmdcClient.merge_related" title="Link to this definition">¶</a></dt>
+<dd><p>Merge related objects of the specified class into the specified DataFrame.</p>
+<p>This function merges related objects of the specified class into the specified DataFrame
+by finding related objects for the specified IDs and merging them into the DataFrame.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – The DataFrame to merge related objects into.</p></li>
+<li><p><strong>id_column</strong> – The name of the column containing the object IDs.</p></li>
+<li><p><strong>cls</strong> – The type of objects to merge into the DataFrame.</p></li>
+<li><p><strong>fields</strong> – A list of fields to include in the result.
+Defaults to None which includes all fields.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A DataFrame containing the merged data.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="nmdc_client.NmdcClient.related_ids">
+<span class="sig-name descname"><span class="pre">related_ids</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ids</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cls</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">SchemaClass</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/nmdc_client.html#NmdcClient.related_ids"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#nmdc_client.NmdcClient.related_ids" title="Link to this definition">¶</a></dt>
+<dd><p>Find related object identifiers of the specified class for the specified IDs.</p>
+<p>This function finds related objects of the specified class for the specified IDs,
+and returns a dictionary mapping each input object ID to a list of related object IDs
+matching the specified class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ids</strong> – A list of object IDs.</p></li>
+<li><p><strong>cls</strong> – The type of objects to find related objects for.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A list of tuples mapping each source ID to a related target ID.</p>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">client</span> <span class="o">=</span> <span class="n">NmdcClient</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">related</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">related_ids</span><span class="p">([</span><span class="s1">&#39;nmdc:bsm-13-7qxjvr77&#39;</span><span class="p">],</span> <span class="n">nmdc</span><span class="o">.</span><span class="n">WorkflowExecution</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">related</span><span class="p">)</span>
+<span class="go">6</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="nmdc_client.SearchDirection">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">nmdc_client.</span></span><span class="sig-name descname"><span class="pre">SearchDirection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">names=&lt;not</span> <span class="pre">given&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">*values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">module=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qualname=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start=1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">boundary=None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/nmdc_client.html#SearchDirection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#nmdc_client.SearchDirection" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></p>
+<p>Enumeration to specify the direction to follow linkages among objects
+in the schema. See <a class="reference internal" href="#nmdc_client.NmdcClient.fetch_links" title="nmdc_client.NmdcClient.fetch_links"><code class="xref py py-func docutils literal notranslate"><span class="pre">NmdcClient.fetch_links()</span></code></a> for details.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nmdc_client.SearchDirection.BACK">
+<span class="sig-name descname"><span class="pre">BACK</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#nmdc_client.SearchDirection.BACK" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="nmdc_client.SearchDirection.FORWARD">
+<span class="sig-name descname"><span class="pre">FORWARD</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#nmdc_client.SearchDirection.FORWARD" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
 </section>
 
         </article>
@@ -268,8 +626,46 @@
         
       </footer>
     </div>
-    <aside class="toc-drawer no-toc">
+    <aside class="toc-drawer">
       
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">nmdc-client Documentation</a><ul>
+<li><a class="reference internal" href="#nmdc_client.NmdcClient"><code class="docutils literal notranslate"><span class="pre">NmdcClient</span></code></a><ul>
+<li><a class="reference internal" href="#nmdc_client.NmdcClient.database_collections_for_type"><code class="docutils literal notranslate"><span class="pre">NmdcClient.database_collections_for_type()</span></code></a></li>
+<li><a class="reference internal" href="#nmdc_client.NmdcClient.fetch_codes"><code class="docutils literal notranslate"><span class="pre">NmdcClient.fetch_codes()</span></code></a></li>
+<li><a class="reference internal" href="#nmdc_client.NmdcClient.fetch_links"><code class="docutils literal notranslate"><span class="pre">NmdcClient.fetch_links()</span></code></a></li>
+<li><a class="reference internal" href="#nmdc_client.NmdcClient.find"><code class="docutils literal notranslate"><span class="pre">NmdcClient.find()</span></code></a></li>
+<li><a class="reference internal" href="#nmdc_client.NmdcClient.find_dict"><code class="docutils literal notranslate"><span class="pre">NmdcClient.find_dict()</span></code></a></li>
+<li><a class="reference internal" href="#nmdc_client.NmdcClient.find_full"><code class="docutils literal notranslate"><span class="pre">NmdcClient.find_full()</span></code></a></li>
+<li><a class="reference internal" href="#nmdc_client.NmdcClient.follow_links"><code class="docutils literal notranslate"><span class="pre">NmdcClient.follow_links()</span></code></a></li>
+<li><a class="reference internal" href="#nmdc_client.NmdcClient.lookup"><code class="docutils literal notranslate"><span class="pre">NmdcClient.lookup()</span></code></a></li>
+<li><a class="reference internal" href="#nmdc_client.NmdcClient.lookup_dict"><code class="docutils literal notranslate"><span class="pre">NmdcClient.lookup_dict()</span></code></a></li>
+<li><a class="reference internal" href="#nmdc_client.NmdcClient.lookup_full"><code class="docutils literal notranslate"><span class="pre">NmdcClient.lookup_full()</span></code></a></li>
+<li><a class="reference internal" href="#nmdc_client.NmdcClient.merge_related"><code class="docutils literal notranslate"><span class="pre">NmdcClient.merge_related()</span></code></a></li>
+<li><a class="reference internal" href="#nmdc_client.NmdcClient.related_ids"><code class="docutils literal notranslate"><span class="pre">NmdcClient.related_ids()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#nmdc_client.SearchDirection"><code class="docutils literal notranslate"><span class="pre">SearchDirection</span></code></a><ul>
+<li><a class="reference internal" href="#nmdc_client.SearchDirection.BACK"><code class="docutils literal notranslate"><span class="pre">SearchDirection.BACK</span></code></a></li>
+<li><a class="reference internal" href="#nmdc_client.SearchDirection.FORWARD"><code class="docutils literal notranslate"><span class="pre">SearchDirection.FORWARD</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
       
       
     </aside>
