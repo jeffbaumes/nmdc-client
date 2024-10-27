@@ -469,19 +469,32 @@ class NmdcClient:
         :param steps: The maximum number of steps to follow.
             Defaults to None which follows all links.
         :return: A list of object identifiers linked to the specified object identifier.
+
+        Example:
+
+        .. code-block:: python
+
+            >>> client = NmdcClient()
+            >>> linked = client.follow_links('nmdc:bsm-13-7qxjvr77', SearchDirection.FORWARD, 1)
+            >>> linked.sort()
+            >>> for item_id in linked:
+            ...     print(item_id)
+            nmdc:omprc-11-z841e208
+            nmdc:omprc-13-359qhn38
+            nmdc:omprc-13-sdcsk511
         """
         if self.links is None:
             self.fetch_links()
         if root_id not in self.links:
             return []
         result = set()
-        frontier = self.links[root_id][direction]
+        frontier = self.links[root_id][direction.value]
         step = 0
         while (steps is None or step < steps) and len(frontier) > 0:
             next_frontier = []
             for item_id in frontier:
                 result.add(item_id)
-                next_frontier.extend(self.links[item_id][direction])
+                next_frontier.extend(self.links[item_id][direction.value])
             frontier = next_frontier
             step += 1
         return list(result)
@@ -518,8 +531,15 @@ class NmdcClient:
 
             >>> client = NmdcClient()
             >>> related = client.related_ids(['nmdc:bsm-13-7qxjvr77'], nmdc.WorkflowExecution)
-            >>> len(related)
-            6
+            >>> related.sort()
+            >>> for source_id, target_id in related:
+            ...     print(source_id, target_id)
+            nmdc:bsm-13-7qxjvr77 nmdc:wfmb-13-w61ppf20.1
+            nmdc:bsm-13-7qxjvr77 nmdc:wfmgan-11-szz9bq42.1
+            nmdc:bsm-13-7qxjvr77 nmdc:wfmgas-13-a7e90z13.1
+            nmdc:bsm-13-7qxjvr77 nmdc:wfmp-11-hpexdy53.1
+            nmdc:bsm-13-7qxjvr77 nmdc:wfrbt-13-8z2h4m87.1
+            nmdc:bsm-13-7qxjvr77 nmdc:wfrqc-13-zntcxa44.1
         """
         cls = cast(Type[nmdc.NamedThing], cls)
         descendants = schema_view.class_descendants(cls.class_name)
@@ -532,8 +552,8 @@ class NmdcClient:
             self.fetch_links()
         result = []
         for source_id in ids:
-            linked = set(self.follow_links(source_id, 0))
-            linked.update(self.follow_links(source_id, 1))
+            linked = set(self.follow_links(source_id, SearchDirection.BACK))
+            linked.update(self.follow_links(source_id, SearchDirection.FORWARD))
 
             # We're checking if the typecode matches any of the descendant codes
             result.extend(
