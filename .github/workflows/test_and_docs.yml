@@ -27,6 +27,10 @@ jobs:
           pip install -r docs/requirements.txt
           pip install -e .
 
+      - name: Run doctest
+        run: |
+          python -m doctest -v nmdc_client/__init__.py
+
       - name: Build Sphinx documentation
         run: |
           cd docs
