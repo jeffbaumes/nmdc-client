@@ -1,4 +1,4 @@
 # pyproject.toml
 [build-system]
-requires = ["setuptools", "wheel", "requests", "pandas"]
+requires = ["setuptools", "wheel", "requests"]
 build-backend = "setuptools.build_meta"
