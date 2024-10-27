@@ -1,0 +1,34 @@
+# Ignore build artifacts
+build/
+
+# Ignore Python bytecode files
+*.pyc
+__pycache__/
+
+# Ignore temporary files
+*.tmp
+*.log
+*.bak
+*.swp
+
+# Ignore virtual environment directories
+venv/
+env/
+.venv/
+
+# Ignore Sphinx build artifacts
+doctrees/
+html/
+
+# Ignore OS-specific files
+.DS_Store
+Thumbs.db
+
+# Ignore editor-specific files
+.vscode/
+.idea/
+
+# Cache files
+links.pickle
+
+*.egg-info/
