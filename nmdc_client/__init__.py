@@ -15,66 +15,62 @@ to merge related objects into one DataFrame.
 This uses the more low-level :class:`NmdcClient.related_ids` function to
 find related objects of a given type from a single ID.
 
-Examples:
+Use the following import to access Pythonic representations of the NMDC schema.
 
-    These examples assume the following
-    import to access Pythonic representations of the NMDC schema.
+.. code-block:: python
 
-    .. code-block:: python
+    >>> from nmdc_schema import nmdc
 
-        >>> from nmdc_schema import nmdc
+Names of classes and slots can be discovered by autocompleting ``nmdc.`` in your IDE, or by
+visiting the `NMDC schema documentation <https://microbiomedata.github.io/nmdc-schema/>`_.
 
-    ``nmdc_schema.nmdc`` contains the NMDC schema classes.
-    Names of classes and slots can be discovered by autocompleting ``nmdc.`` in your IDE, or by
-    visiting the `NMDC schema documentation <https://microbiomedata.github.io/nmdc-schema/>`_.
+To interact with the NMDC API, create an :class:`NmdcClient` instance.
 
-    To interact with the NMDC API, create an :class:`NmdcClient` instance.
+.. code-block:: python
 
-    .. code-block:: python
+    >>> client = NmdcClient()
 
-        >>> client = NmdcClient()
+The following retrieves all studies with Wrighton as principal investigator as a DataFrame.
+Queries are specified using
+`MongoDB query syntax <https://www.mongodb.com/docs/manual/tutorial/query-documents/>`_.
 
-    The following retrieves all studies with Wrighton as principal investigator as a DataFrame.
-    Queries are specified using
-    `MongoDB query syntax <https://www.mongodb.com/docs/manual/tutorial/query-documents/>`_.
+.. code-block:: python
 
-    .. code-block:: python
+    >>> query = {'principal_investigator.has_raw_value': {'$regex': 'Wrighton'}}
+    >>> studies = client.find(nmdc.Study, query=query)
+    >>> len(studies)
+    2
 
-        >>> query = {'principal_investigator.has_raw_value': {'$regex': 'Wrighton'}}
-        >>> studies = client.find(nmdc.Study, query=query)
-        >>> len(studies)
-        2
+The following retrieves a specific biosample by its identifier and associates it
+with study metadata. The first time :class:`NmdcClient.merge_related` is called,
+it will fetch all linkages between objects in the NMDC schema and cache them in
+a file local to the package. You can force an update of this cache at a later time with
+by calling :class:`NmdcClient.fetch_links` with ``force`` set to ``True``.
 
-    The following retrieves a specific biosample by its identifier and associates it
-    with study metadata. The first time :class:`NmdcClient.merge_related` is called,
-    it will fetch all linkages between objects in the NMDC schema and cache them in
-    a file local to the package. You can force an update of this cache at a later time with
-    by calling :class:`NmdcClient.fetch_links` with ``force`` set to ``True``.
+.. code-block:: python
 
-    .. code-block:: python
+    >>> ids = ['nmdc:bsm-13-7qxjvr77']
+    >>> biosample = client.lookup(nmdc.Biosample, ids, fields=['id', 'name'])
+    >>> add_study = client.merge_related(biosample, 'id', nmdc.Study, fields=['id', 'title'])
+    >>> for col in add_study.columns:
+    ...    print(col)
+    id
+    name
+    id_Study
+    title
 
-        >>> ids = ['nmdc:bsm-13-7qxjvr77']
-        >>> biosample = client.lookup(nmdc.Biosample, ids, fields=['id', 'name'])
-        >>> add_study = client.merge_related(biosample, 'id', nmdc.Study, fields=['id', 'title'])
-        >>> for col in add_study.columns:
-        ...    print(col)
-        id
-        name
-        id_Study
-        title
+The following retrieves 10 samples then merges them with all associated WorkflowExecutions.
 
-    The following retrieves 10 samples then merges them with all associated WorkflowExecutions.
+.. code-block:: python
 
-    .. code-block:: python
-
-        >>> samp = client.find(nmdc.Biosample, fields=["id", "type"], limit=10)
-        >>> exec = client.merge_related(samp, "id", nmdc.WorkflowExecution, fields=["id", "type"])
-        >>> for col in exec.columns:
-        ...     print(col)
-        id
-        type
-        id_WorkflowExecution
-        type_WorkflowExecution
+    >>> samp = client.find(nmdc.Biosample, fields=["id", "type"], limit=10)
+    >>> exec = client.merge_related(samp, "id", nmdc.WorkflowExecution, fields=["id", "type"])
+    >>> for col in exec.columns:
+    ...     print(col)
+    id
+    type
+    id_WorkflowExecution
+    type_WorkflowExecution
 """
 
 from enum import Enum
