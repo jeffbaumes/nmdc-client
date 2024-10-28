@@ -239,13 +239,24 @@
         <article role="main" id="furo-main-content">
           <section id="nmdc-client">
 <h1>nmdc-client<a class="headerlink" href="#nmdc-client" title="Link to this heading">¶</a></h1>
-<p>Documentation: <a class="reference external" href="https://jeffbaumes.github.io/nmdc-client">https://jeffbaumes.github.io/nmdc-client</a></p>
+<ul class="simple">
+<li><p>GitHub: <a class="reference external" href="https://github.com/jeffbaumes/nmdc-client">https://github.com/jeffbaumes/nmdc-client</a></p></li>
+<li><p>Documentation: <a class="reference external" href="https://jeffbaumes.github.io/nmdc-client">https://jeffbaumes.github.io/nmdc-client</a></p></li>
+</ul>
 <p>This module provides functions to interact with the NMDC API,
 including retrieving metadata into dataframes and linking across schema objects.</p>
 <section id="getting-started">
 <h2>Getting started<a class="headerlink" href="#getting-started" title="Link to this heading">¶</a></h2>
 <p>To install:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>git+https://github.com/jeffbaumes/nmdc-client.git
+</pre></div>
+</div>
+<p>To use:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">nmdc_client</span> <span class="kn">import</span> <span class="n">NmdcClient</span>
+<span class="kn">from</span> <span class="nn">nmdc_schema</span> <span class="kn">import</span> <span class="n">nmdc</span>
+
+<span class="n">client</span> <span class="o">=</span> <span class="n">NmdcClient</span><span class="p">()</span>
+<span class="n">studies</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">nmdc</span><span class="o">.</span><span class="n">Study</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="toctree-wrapper compound">
