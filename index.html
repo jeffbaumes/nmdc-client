@@ -237,11 +237,23 @@
           </label>
         </div>
         <article role="main" id="furo-main-content">
-          <section id="nmdc-client-documentation">
-<h1>nmdc-client Documentation<a class="headerlink" href="#nmdc-client-documentation" title="Link to this heading">¶</a></h1>
+          <section id="nmdc-client">
+<h1>nmdc-client<a class="headerlink" href="#nmdc-client" title="Link to this heading">¶</a></h1>
+<p>Documentation: <a class="reference external" href="https://jeffbaumes.github.io/nmdc-client">https://jeffbaumes.github.io/nmdc-client</a></p>
+<p>This module provides functions to interact with the NMDC API,
+including retrieving metadata into dataframes and linking across schema objects.</p>
+<section id="getting-started">
+<h2>Getting started<a class="headerlink" href="#getting-started" title="Link to this heading">¶</a></h2>
+<p>To install:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>git+https://github.com/jeffbaumes/nmdc-client.git
+</pre></div>
+</div>
 <div class="toctree-wrapper compound">
 </div>
-<p id="module-nmdc_client">This module provides functions to interact with the NMDC API,
+</section>
+<section id="module-nmdc_client">
+<span id="user-guide"></span><h2>User guide<a class="headerlink" href="#module-nmdc_client" title="Link to this heading">¶</a></h2>
+<p>This module provides functions to interact with the NMDC API,
 including retrieving metadata into dataframes and linking across schema objects.</p>
 <p>The <a class="reference internal" href="#nmdc_client.NmdcClient.find" title="nmdc_client.NmdcClient.find"><code class="xref py py-class docutils literal notranslate"><span class="pre">NmdcClient.find</span></code></a> and <a class="reference internal" href="#nmdc_client.NmdcClient.lookup" title="nmdc_client.NmdcClient.lookup"><code class="xref py py-class docutils literal notranslate"><span class="pre">NmdcClient.lookup</span></code></a> functions return data as a DataFrame.
 To retrieve data as a list of dictionaries, use <a class="reference internal" href="#nmdc_client.NmdcClient.find_dict" title="nmdc_client.NmdcClient.find_dict"><code class="xref py py-class docutils literal notranslate"><span class="pre">NmdcClient.find_dict</span></code></a> and
@@ -254,14 +266,11 @@ for more information on NMDC schema classes.</p>
 to merge related objects into one DataFrame.
 This uses the more low-level <a class="reference internal" href="#nmdc_client.NmdcClient.related_ids" title="nmdc_client.NmdcClient.related_ids"><code class="xref py py-class docutils literal notranslate"><span class="pre">NmdcClient.related_ids</span></code></a> function to
 find related objects of a given type from a single ID.</p>
-<p class="rubric">Examples</p>
-<p>These examples assume the following
-import to access Pythonic representations of the NMDC schema.</p>
+<p>Use the following import to access Pythonic representations of the NMDC schema.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">nmdc_schema</span> <span class="kn">import</span> <span class="n">nmdc</span>
 </pre></div>
 </div>
-<p><code class="docutils literal notranslate"><span class="pre">nmdc_schema.nmdc</span></code> contains the NMDC schema classes.
-Names of classes and slots can be discovered by autocompleting <code class="docutils literal notranslate"><span class="pre">nmdc.</span></code> in your IDE, or by
+<p>Names of classes and slots can be discovered by autocompleting <code class="docutils literal notranslate"><span class="pre">nmdc.</span></code> in your IDE, or by
 visiting the <a class="reference external" href="https://microbiomedata.github.io/nmdc-schema/">NMDC schema documentation</a>.</p>
 <p>To interact with the NMDC API, create an <a class="reference internal" href="#nmdc_client.NmdcClient" title="nmdc_client.NmdcClient"><code class="xref py py-class docutils literal notranslate"><span class="pre">NmdcClient</span></code></a> instance.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">client</span> <span class="o">=</span> <span class="n">NmdcClient</span><span class="p">()</span>
@@ -467,6 +476,17 @@ Defaults to None which follows all links.</p></li>
 <dd class="field-even"><p>A list of object identifiers linked to the specified object identifier.</p>
 </dd>
 </dl>
+<p>Example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">client</span> <span class="o">=</span> <span class="n">NmdcClient</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">linked</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">follow_links</span><span class="p">(</span><span class="s1">&#39;nmdc:bsm-13-7qxjvr77&#39;</span><span class="p">,</span> <span class="n">SearchDirection</span><span class="o">.</span><span class="n">FORWARD</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">linked</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">item_id</span> <span class="ow">in</span> <span class="n">linked</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="n">item_id</span><span class="p">)</span>
+<span class="go">nmdc:omprc-11-z841e208</span>
+<span class="go">nmdc:omprc-13-359qhn38</span>
+<span class="go">nmdc:omprc-13-sdcsk511</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">
@@ -573,8 +593,15 @@ matching the specified class.</p>
 <p>Example:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">client</span> <span class="o">=</span> <span class="n">NmdcClient</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">related</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">related_ids</span><span class="p">([</span><span class="s1">&#39;nmdc:bsm-13-7qxjvr77&#39;</span><span class="p">],</span> <span class="n">nmdc</span><span class="o">.</span><span class="n">WorkflowExecution</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">related</span><span class="p">)</span>
-<span class="go">6</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">related</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">source_id</span><span class="p">,</span> <span class="n">target_id</span> <span class="ow">in</span> <span class="n">related</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="n">source_id</span><span class="p">,</span> <span class="n">target_id</span><span class="p">)</span>
+<span class="go">nmdc:bsm-13-7qxjvr77 nmdc:wfmb-13-w61ppf20.1</span>
+<span class="go">nmdc:bsm-13-7qxjvr77 nmdc:wfmgan-11-szz9bq42.1</span>
+<span class="go">nmdc:bsm-13-7qxjvr77 nmdc:wfmgas-13-a7e90z13.1</span>
+<span class="go">nmdc:bsm-13-7qxjvr77 nmdc:wfmp-11-hpexdy53.1</span>
+<span class="go">nmdc:bsm-13-7qxjvr77 nmdc:wfrbt-13-8z2h4m87.1</span>
+<span class="go">nmdc:bsm-13-7qxjvr77 nmdc:wfrqc-13-zntcxa44.1</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -599,6 +626,7 @@ in the schema. See <a class="reference internal" href="#nmdc_client.NmdcClient.f
 
 </dd></dl>
 
+</section>
 </section>
 
         </article>
@@ -638,7 +666,9 @@ in the schema. See <a class="reference internal" href="#nmdc_client.NmdcClient.f
         <div class="toc-tree-container">
           <div class="toc-tree">
             <ul>
-<li><a class="reference internal" href="#">nmdc-client Documentation</a><ul>
+<li><a class="reference internal" href="#">nmdc-client</a><ul>
+<li><a class="reference internal" href="#getting-started">Getting started</a></li>
+<li><a class="reference internal" href="#module-nmdc_client">User guide</a><ul>
 <li><a class="reference internal" href="#nmdc_client.NmdcClient"><code class="docutils literal notranslate"><span class="pre">NmdcClient</span></code></a><ul>
 <li><a class="reference internal" href="#nmdc_client.NmdcClient.database_collections_for_type"><code class="docutils literal notranslate"><span class="pre">NmdcClient.database_collections_for_type()</span></code></a></li>
 <li><a class="reference internal" href="#nmdc_client.NmdcClient.fetch_codes"><code class="docutils literal notranslate"><span class="pre">NmdcClient.fetch_codes()</span></code></a></li>
@@ -657,6 +687,8 @@ in the schema. See <a class="reference internal" href="#nmdc_client.NmdcClient.f
 <li><a class="reference internal" href="#nmdc_client.SearchDirection"><code class="docutils literal notranslate"><span class="pre">SearchDirection</span></code></a><ul>
 <li><a class="reference internal" href="#nmdc_client.SearchDirection.BACK"><code class="docutils literal notranslate"><span class="pre">SearchDirection.BACK</span></code></a></li>
 <li><a class="reference internal" href="#nmdc_client.SearchDirection.FORWARD"><code class="docutils literal notranslate"><span class="pre">SearchDirection.FORWARD</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
